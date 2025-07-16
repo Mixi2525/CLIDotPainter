@@ -1,0 +1,8 @@
+*.o
+*.vim
+.clangd
+compile_flags.txt
+
+# Build artifacts
+bin/
+build/
