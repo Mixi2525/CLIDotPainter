@@ -7,7 +7,7 @@ TARGET := $(BINDIR)/main
 LDFLAGS := -lncursesw
 
 CXX := g++
-CXXFLAGS := -Wall -MMD -I$(INCDIR)
+CXXFLAGS := -Wall -MMD -I$(INCDIR) -std=c++20
 MAIN_CXXFLAGS := -D_XOPEN_SOURCE_EXTENDED
 
 # cppファイル取得
