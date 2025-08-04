@@ -7,5 +7,5 @@ compile_flags.txt
 bin/
 build/
 compile_commands.json
-main.plist
+*.plist
 .cache/
