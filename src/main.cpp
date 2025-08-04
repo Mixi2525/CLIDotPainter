@@ -1,5 +1,6 @@
 
 #include <clocale>
+#include <cstdint>
 #include <ncurses.h>
 #include <random>
 #include <string>
@@ -8,9 +9,12 @@
 #include "graphics/Color.hpp"
 #include "graphics/ColorPair.hpp"
 #include "core/Vector2.hpp"
+#include "ui/FooterData.hpp"
 #include "ui/SidePanel.hpp"
 #include "ui/Canvas.hpp"
 #include "ui/Cursor.hpp"
+#include "ui/Footer.hpp"
+#include "ui/FooterData.hpp"
 
 void waitEnter()
 {
@@ -65,7 +69,8 @@ int main()
     Vector2 correctWindowSize;
     Vector2 moveLimitMin, moveLimitMax;
     Vector2 printAreaLimitMin, printAreaLimitMax;
-
+    Color::RGB currentRgb(0, 0, 0);
+
     //setting
     setlocale(LC_ALL, "");
     
@@ -107,6 +112,13 @@ int main()
             printAreaLimitMax,
             canvas.layers, 
             canvas.getCurrentLayerIter());
+
+    Footer footer(
+            FooterData(cursor.getCursorPos(), 
+                             canvas.getPos(),
+                                        currentRgb), 
+            windowSize.y
+    );
 
     canvas.setMoveLimit(moveLimitMin, moveLimitMax);
     canvas.setPrintAreaLimit(moveLimitMin, moveLimitMax);
@@ -217,7 +229,11 @@ int main()
                     if (0 <= cpos.y && cpos.y < canvasSize.y &&
                         0 <= cpos.x && cpos.x < canvasSize.x)
                     {
-                        Color::NcColorID colnum = Color::allocateNcursesColor(dist(mt), dist(mt), dist(mt));
+                        currentRgb.r = dist(mt);
+                        currentRgb.g = dist(mt);
+                        currentRgb.b = dist(mt);
+
+                        Color::NcColorID colnum = Color::allocateNcursesColor(currentRgb);
                         ColorPair::NcPairID pair = ColorPair::allocateNcursesColorPair(0, colnum);
                         canvas.getCurrentLayerIter()->setpx(cpos.y, cpos.x, pair);
                     }
@@ -263,9 +279,9 @@ int main()
         cursor.print();
 
         // 現在のカーソル位置を描画
-        attr_set(A_NORMAL, 0, NULL);
-        Vector2 cpos = cursor.getCursorPos();
-        mvprintw(windowSize.y - 2, 0, "(%d, %d)", cpos.x, cpos.y);
+        // attr_set(A_NORMAL, 0, NULL);
+        // Vector2 cpos = cursor.getCursorPos();
+        // mvprintw(windowSize.y - 2, 0, "(%d, %d)", cpos.x, cpos.y);
 
         // print可能な範囲
         std::tie(printAreaLimitMin, printAreaLimitMax)
@@ -279,6 +295,15 @@ int main()
             canvas.getCurrentLayerIter());
 
         sidePanel.print();
+
+        footer.update(
+            FooterData(cursor.getCursorPos(), 
+                             canvas.getPos(),
+                                        currentRgb), 
+            windowSize.y
+        );
+
+        footer.print();
 
         refresh();
     }

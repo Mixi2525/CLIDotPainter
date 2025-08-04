@@ -75,6 +75,11 @@ Vector2 Canvas::getCanvasSize()
 }
 
 
+Vector2 Canvas::getPos()
+{
+    return pos;
+}
+
 void Canvas::setMoveLimit(Vector2& lim_min, Vector2& lim_max)
 {
     this->lim_min = lim_min;

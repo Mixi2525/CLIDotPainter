@@ -184,3 +184,4 @@ void ColorPair::setCursorPairColor(bool isDefault)
         return;
     }
 }
+

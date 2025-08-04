@@ -27,8 +27,8 @@ public:
     SidePanel(Vector2 windowSize, Vector2 printAreaLimitMin, Vector2 printAreaLimitMax);
     ~SidePanel();
 
-    void print() const;
-    void print(Vector2 offset) const;
+    void print() const override;
+    void print(Vector2 offset) const override;
 
     void update(Vector2 windowSize, 
             Vector2 printAreaLimitMin, 

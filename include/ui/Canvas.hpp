@@ -44,6 +44,8 @@ public:
     void move(Vector2 direction) override;
     void moveDirect(Vector2& direct_pos) override;
 
+    Vector2 getPos();
+
     // Printable Area
     void setPrintAreaLimit(const Vector2& lim_min, const Vector2& lim_max);
     void setPrintAreaLimit( int lim_min_x, int lim_min_y, 
