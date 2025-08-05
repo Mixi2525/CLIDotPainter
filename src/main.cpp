@@ -1,10 +1,13 @@
 
 #include <clocale>
 #include <cstdint>
+#include <functional>
 #include <ncurses.h>
+#include <optional>
 #include <random>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 
 #include "core/KeyConstants.hpp"
 #include "graphics/Color.hpp"
@@ -63,6 +66,107 @@ void debugAction(Canvas& canvas, Cursor& cursor)
 
 }
 
+struct AppContext
+{
+    bool isClose = false;
+    Color::RGB currentRgb;
+    std::optional<std::reference_wrapper<Canvas>> canvas;
+    std::optional<std::reference_wrapper<Cursor>> cursor;
+    std::mt19937 mt{std::random_device{}()};
+    std::uniform_int_distribution<int> dist{0, 255};
+};
+
+void bindKeyAction(
+        std::unordered_map<int, std::function<void()>>& keyActionMap, 
+        const std::optional<int> keys[2], 
+        std::function<void()> action)
+{
+    for (int idx = 0; idx < KeyConstants::MAX_REGISTABLE_KEY; idx++)
+    {
+        if (keys[idx].has_value())
+        { // キーが設定されている
+            keyActionMap[keys[idx].value()] = action;
+        }
+    }
+}
+
+void setupKeyBindings(std::unordered_map<int, std::function<void()>>& keyActionMap, AppContext& context)
+{
+    /* キーと関連つける処理定義 */
+    // プログラム終了フラグ
+    auto appQuit = [&]()
+    {
+        context.isClose = true;
+    };
+
+    auto draw = [&]()
+    {
+        if (!context.canvas || !context.cursor)
+        { // 少なくともどっちかが参照を持っていない
+            return;
+        }
+
+        Canvas& canvas = context.canvas->get();
+        Cursor& cursor = context.cursor->get();
+
+        Vector2 cpos = cursor.getCursorPos(); // キャンバスの正方形ピクセル座標
+        Vector2 canvasSize = canvas.getCanvasSize();
+
+        if (0 <= cpos.y && cpos.y < canvasSize.y &&
+            0 <= cpos.x && cpos.x < canvasSize.x)
+        {
+            context.currentRgb.r = context.dist(context.mt);
+            context.currentRgb.g = context.dist(context.mt);
+            context.currentRgb.b = context.dist(context.mt);
+
+            Color::NcColorID colnum = Color::allocateNcursesColor(context.currentRgb);
+            ColorPair::NcPairID pair = ColorPair::allocateNcursesColorPair(0, colnum);
+            canvas.getCurrentLayerIter()->setpx(cpos.y, cpos.x, pair);
+        }
+    };
+
+    auto moveLeft = [&]() 
+    {
+        if (context.cursor)
+            context.cursor->get().move(Vector2::LEFT);
+    };
+    auto moveDown = [&]()
+    {
+        if (context.cursor)
+            context.cursor->get().move(Vector2::DOWN);
+    };
+    auto moveUp = [&]() 
+    {
+        if (context.cursor)
+            context.cursor->get().move(Vector2::UP);
+    };
+    auto moveRight = [&]() 
+    {
+        if (context.cursor)
+            context.cursor->get().move(Vector2::RIGHT); 
+    };
+
+    auto debug = [&]() 
+    {
+        if (!context.canvas || !context.cursor)
+        { // 少なくともどっちかが参照を持っていない
+            return;
+        }
+
+        debugAction(context.canvas->get(), context.cursor->get());
+    };
+
+    /* キーと処理を関連つける */
+    bindKeyAction(keyActionMap, KeyConstants::PROGRAM_QUIT_KEY, appQuit);
+    bindKeyAction(keyActionMap, KeyConstants::DRAW_KEY, draw);
+    bindKeyAction(keyActionMap, KeyConstants::MOVE_CURSOR_LEFT_KEY, moveLeft);
+    bindKeyAction(keyActionMap, KeyConstants::MOVE_CURSOR_DOWN_KEY, moveDown);
+    bindKeyAction(keyActionMap, KeyConstants::MOVE_CURSOR_UP_KEY, moveUp);
+    bindKeyAction(keyActionMap, KeyConstants::MOVE_CURSOR_RIGHT_KEY, moveRight);
+    bindKeyAction(keyActionMap, KeyConstants::EXECUTE_DEBUG_PROCESS_KEY, debug);
+}
+
+
 int main()
 {
     Cursor cursor;
@@ -70,8 +174,9 @@ int main()
     Vector2 correctWindowSize;
     Vector2 moveLimitMin, moveLimitMax;
     Vector2 printAreaLimitMin, printAreaLimitMax;
-    Color::RGB currentRgb(0, 0, 0);
-
+    std::unordered_map<int, std::function<void()>> keyActionMap;
+    AppContext context;
+
     //setting
     setlocale(LC_ALL, "");
     
@@ -117,8 +222,8 @@ int main()
     Footer footer(
             FooterData(cursor.getCursorPos(), 
                              canvas.getPos(),
-                                        currentRgb), 
-            windowSize.y
+                             context.currentRgb), 
+            correctWindowSize.y
     );
 
     canvas.setMoveLimit(moveLimitMin, moveLimitMax);
@@ -126,12 +231,6 @@ int main()
     cursor.setMoveLimit(moveLimitMin, moveLimitMax);
 
     canvas.addLayer("layer");
-
-    // デバッグ用のランダム値生成装置作成
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_int_distribution<> dist(0, 255);
-
 
     ColorPair::NcPairID cursorColorPair = canvas.getTopVisibleColorPair(cursor.getCursorPos());
     if (cursorColorPair != 0)
@@ -151,11 +250,15 @@ int main()
     cursor.print();
     refresh();
 
+    context.canvas = canvas;
+    context.cursor = cursor;
+    setupKeyBindings(keyActionMap, context);
+
     int ch;
-    bool isClose = false;
+    context.isClose = false;
 
     /* mainroop */
-    while (!isClose)
+    while (!context.isClose)
     {
         // 画面のリサイズに合わせて移動制限範囲を変更
         getmaxyx(stdscr, windowSize.y, windowSize.x);
@@ -179,76 +282,13 @@ int main()
         // 入力文字を取得
         ch = getch();
 
-        if (KeyConstants::isKeyInput(ch, KeyConstants::MOVE_CURSOR_LEFT_KEY))
+        if (keyActionMap.contains(ch))
         {
-            cursor.move(Vector2::LEFT);
+            keyActionMap[ch]();
         }
-        else if (KeyConstants::isKeyInput(ch, KeyConstants::MOVE_CURSOR_DOWN_KEY))
+        else
         {
-            cursor.move(Vector2::DOWN);
-        }
-
-        switch (ch)
-        {
-            case KeyConstants::MOVE_CURSOR_UP_KEY[0]:
-            case KeyConstants::MOVE_CURSOR_UP_KEY[1]:
-                {
-                    cursor.move(Vector2::UP);
-                }
-                break;
-
-            case KeyConstants::MOVE_CURSOR_RIGHT[0]:
-            case KeyConstants::MOVE_CURSOR_RIGHT[1]:
-                {
-                    cursor.move(Vector2::RIGHT);
-                }
-                break;
-
-            case KeyConstants::PROGRAM_QUIT_KEY[0]:
-            case KeyConstants::PROGRAM_QUIT_KEY[1]:
-                {
-                    isClose = true;
-                }
-                break;
-
-            case 'd':
-                {
-                    debugAction(canvas, cursor);
-                }
-                break;
-
-            // Space key
-            case 32:
-                {
-                    Vector2 cpos = cursor.getCursorPos(); // キャンバスの正方形ピクセル座標
-                    Vector2 canvasSize = canvas.getCanvasSize();
-
-                    if (0 <= cpos.y && cpos.y < canvasSize.y &&
-                        0 <= cpos.x && cpos.x < canvasSize.x)
-                    {
-                        currentRgb.r = dist(mt);
-                        currentRgb.g = dist(mt);
-                        currentRgb.b = dist(mt);
-
-                        Color::NcColorID colnum = Color::allocateNcursesColor(currentRgb);
-                        ColorPair::NcPairID pair = ColorPair::allocateNcursesColorPair(0, colnum);
-                        canvas.getCurrentLayerIter()->setpx(cpos.y, cpos.x, pair);
-                    }
-                }
-                break;
-
-
-            case ERR:
-                {
-
-                }
-                break;
-
-            default:
-                {
-
-                }
-                break;
+            mvprintw(correctWindowSize.y, 0, "Invalid Key");
         }
 
         // 描画処理
@@ -264,7 +304,7 @@ int main()
             Color::NcColorID cursorColor = ColorPair::getPairFromColorPair(cursorColorPair);
             Color::RGB cursorRgb = Color::getRGBFromColor(cursorColor);
 
-            int res = Color::setCursorColor(0, 0, 0, cursorRgb.r, cursorRgb.g, cursorRgb.b);
+            Color::setCursorColor(0, 0, 0, cursorRgb.r, cursorRgb.g, cursorRgb.b);
 
             ColorPair::setCursorPairColor();
         }
@@ -295,9 +335,9 @@ int main()
 
         footer.update(
             FooterData(cursor.getCursorPos(), 
-                             canvas.getPos(),
-                                        currentRgb), 
-            windowSize.y
+                       canvas.getPos(),
+                       context.currentRgb), 
+            correctWindowSize.y
         );
 
         footer.print();
