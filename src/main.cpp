@@ -6,6 +6,7 @@
 #include <string>
 #include <tuple>
 
+#include "core/KeyConstants.hpp"
 #include "graphics/Color.hpp"
 #include "graphics/ColorPair.hpp"
 #include "core/Vector2.hpp"
@@ -178,37 +179,33 @@ int main()
         // 入力文字を取得
         ch = getch();
 
+        if (KeyConstants::isKeyInput(ch, KeyConstants::MOVE_CURSOR_LEFT_KEY))
+        {
+            cursor.move(Vector2::LEFT);
+        }
+        else if (KeyConstants::isKeyInput(ch, KeyConstants::MOVE_CURSOR_DOWN_KEY))
+        {
+            cursor.move(Vector2::DOWN);
+        }
+
         switch (ch)
         {
-            case 'h':
-            case KEY_LEFT:
-                {
-                    cursor.move(Vector2::LEFT);
-                }
-                break;
-
-            case 'j':
-            case KEY_DOWN:
-                {
-                    cursor.move(Vector2::DOWN);
-                }
-                break;
-
-            case 'k':
-            case KEY_UP:
+            case KeyConstants::MOVE_CURSOR_UP_KEY[0]:
+            case KeyConstants::MOVE_CURSOR_UP_KEY[1]:
                 {
                     cursor.move(Vector2::UP);
                 }
                 break;
 
-            case 'l':
-            case KEY_RIGHT:
+            case KeyConstants::MOVE_CURSOR_RIGHT[0]:
+            case KeyConstants::MOVE_CURSOR_RIGHT[1]:
                 {
                     cursor.move(Vector2::RIGHT);
                 }
                 break;
 
-            case 'q':
+            case KeyConstants::PROGRAM_QUIT_KEY[0]:
+            case KeyConstants::PROGRAM_QUIT_KEY[1]:
                 {
                     isClose = true;
                 }
