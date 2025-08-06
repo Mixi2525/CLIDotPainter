@@ -80,8 +80,7 @@ struct AppContext
 
 void changeColorValue(int& col, int step)
 {
-    col += step;
-    col = std::clamp(col, 0, 255);
+    col = std::clamp(col + step, 0, 255);
 }
 
 void bindKeyAction(
@@ -96,6 +95,15 @@ void bindKeyAction(
             keyActionMap[keys[idx].value()] = action;
         }
     }
+}
+
+auto createChangeColorValueAction(AppContext& context,
+        int (Color::RGB::* changeValuePtr), 
+        int step)
+{
+    return [=, &context]() {
+        changeColorValue(context.currentRgb.*changeValuePtr, step);
+    };
 }
 
 void setupKeyBindings(std::unordered_map<int, std::function<void()>>& keyActionMap, AppContext& context)
@@ -164,39 +172,6 @@ void setupKeyBindings(std::unordered_map<int, std::function<void()>>& keyActionM
         debugAction(context.canvas->get(), context.cursor->get());
     };
 
-    auto increaseColorValueRB = [&]()
-    {
-        changeColorValue(context.currentRgb.r, 
-                         ApplicationSettings::BaseColorChangeStepValue);
-    };
-    auto increaseColorValueGB = [&]()
-    {
-        changeColorValue(context.currentRgb.g, 
-                         ApplicationSettings::BaseColorChangeStepValue);
-    };
-    auto increaseColorValueBB = [&]()
-    {
-        changeColorValue(context.currentRgb.b, 
-                         ApplicationSettings::BaseColorChangeStepValue);
-    };
-
-    auto decreaseColorValueRB = [&]()
-    {
-        changeColorValue(context.currentRgb.r, 
-                         -ApplicationSettings::BaseColorChangeStepValue);
-    };
-    auto decreaseColorValueGB = [&]()
-    {
-        changeColorValue(context.currentRgb.g, 
-                         -ApplicationSettings::BaseColorChangeStepValue);
-    };
-    auto decreaseColorValueBB = [&]()
-    {
-        changeColorValue(context.currentRgb.b, 
-                         -ApplicationSettings::BaseColorChangeStepValue);
-    };
-
-
     /* キーと処理を関連つける */
     bindKeyAction(keyActionMap, KeyConstants::PROGRAM_QUIT_KEY, appQuit);
     bindKeyAction(keyActionMap, KeyConstants::DRAW_KEY, draw);
@@ -206,12 +181,44 @@ void setupKeyBindings(std::unordered_map<int, std::function<void()>>& keyActionM
     bindKeyAction(keyActionMap, KeyConstants::MOVE_CURSOR_RIGHT_KEY, moveRight);
     bindKeyAction(keyActionMap, KeyConstants::EXECUTE_DEBUG_PROCESS_KEY, debug);
 
-    bindKeyAction(keyActionMap, KeyConstants::INCREASE_CURRENTCOLOR_R_KEY, increaseColorValueRB);
-    bindKeyAction(keyActionMap, KeyConstants::INCREASE_CURRENTCOLOR_G_KEY, increaseColorValueGB);
-    bindKeyAction(keyActionMap, KeyConstants::INCREASE_CURRENTCOLOR_B_KEY, increaseColorValueBB);
-    bindKeyAction(keyActionMap, KeyConstants::DECREASE_CURRENTCOLOR_R_KEY, decreaseColorValueRB);
-    bindKeyAction(keyActionMap, KeyConstants::DECREASE_CURRENTCOLOR_G_KEY, decreaseColorValueGB);
-    bindKeyAction(keyActionMap, KeyConstants::DECREASE_CURRENTCOLOR_B_KEY, decreaseColorValueBB);
+    const std::array<const std::optional<int>*, 6> 
+    changeColorKeys = {
+        KeyConstants::INCREASE_CURRENTCOLOR_R_KEY,
+        KeyConstants::INCREASE_CURRENTCOLOR_G_KEY,
+        KeyConstants::INCREASE_CURRENTCOLOR_B_KEY,
+        KeyConstants::DECREASE_CURRENTCOLOR_R_KEY,
+        KeyConstants::DECREASE_CURRENTCOLOR_G_KEY,
+        KeyConstants::DECREASE_CURRENTCOLOR_B_KEY
+    };
+
+    const std::array<int Color::RGB::*, 3> 
+    colorRgbPtrs = {
+        &Color::RGB::r,
+        &Color::RGB::g,
+        &Color::RGB::b
+    };
+
+    const std::array<int, 2>
+    steps = {
+        ApplicationSettings::BaseColorChangeStepValue,
+        ApplicationSettings::ShiftColorChangeStepValue
+    };
+
+    // for (int step : steps)
+    // {
+        for (int idx = 0; idx < changeColorKeys.size(); idx++)
+        {
+            // 3以降は値減少キーだからマイナスにする必要がある
+            int8_t fact = ((idx >= 3) ? -1 : 1);
+
+            bindKeyAction(keyActionMap, 
+                changeColorKeys[idx], 
+                createChangeColorValueAction(
+                    context, 
+                    colorRgbPtrs[idx % 3],
+                    steps[0] * fact));
+        }
+    // }
 }
 
 

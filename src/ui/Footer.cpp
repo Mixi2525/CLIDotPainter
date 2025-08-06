@@ -27,10 +27,16 @@ void Footer::print() const
 
 void Footer::print(Vector2 offset) const
 {
+    int posY = windowSizeY - 1;
     attr_set(A_NORMAL, static_cast<ColorPair::NcPairID>(ReservedPairNumber::CURRENTCOLOR), NULL);
-    mvprintw(windowSizeY - 1, 0, "  ");
+    mvprintw(posY, 0, "  ");
 
     attr_set(A_NORMAL, 0, NULL);
+
+    mvprintw(posY, 3, "(%d, %d, %d)", 
+             data.currentRgb.r, 
+             data.currentRgb.g,
+             data.currentRgb.b);
     
     mvprintw(windowSizeY - 1, 20, "%d,%d", data.cursorPos.x, data.cursorPos.y);
 }
