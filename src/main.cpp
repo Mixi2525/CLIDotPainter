@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include <clocale>
 #include <cstdint>
 #include <functional>
@@ -10,6 +11,7 @@
 #include <unordered_map>
 
 #include "core/KeyConstants.hpp"
+#include "core/ApplicationSettings.hpp"
 #include "graphics/Color.hpp"
 #include "graphics/ColorPair.hpp"
 #include "core/Vector2.hpp"
@@ -75,6 +77,12 @@ struct AppContext
     std::mt19937 mt{std::random_device{}()};
     std::uniform_int_distribution<int> dist{0, 255};
 };
+
+void changeColorValue(int& col, int step)
+{
+    col += step;
+    col = std::clamp(col, 0, 255);
+}
 
 void bindKeyAction(
         std::unordered_map<int, std::function<void()>>& keyActionMap, 
@@ -156,6 +164,39 @@ void setupKeyBindings(std::unordered_map<int, std::function<void()>>& keyActionM
         debugAction(context.canvas->get(), context.cursor->get());
     };
 
+    auto increaseColorValueRB = [&]()
+    {
+        changeColorValue(context.currentRgb.r, 
+                         ApplicationSettings::BaseColorChangeStepValue);
+    };
+    auto increaseColorValueGB = [&]()
+    {
+        changeColorValue(context.currentRgb.g, 
+                         ApplicationSettings::BaseColorChangeStepValue);
+    };
+    auto increaseColorValueBB = [&]()
+    {
+        changeColorValue(context.currentRgb.b, 
+                         ApplicationSettings::BaseColorChangeStepValue);
+    };
+
+    auto decreaseColorValueRB = [&]()
+    {
+        changeColorValue(context.currentRgb.r, 
+                         -ApplicationSettings::BaseColorChangeStepValue);
+    };
+    auto decreaseColorValueGB = [&]()
+    {
+        changeColorValue(context.currentRgb.g, 
+                         -ApplicationSettings::BaseColorChangeStepValue);
+    };
+    auto decreaseColorValueBB = [&]()
+    {
+        changeColorValue(context.currentRgb.b, 
+                         -ApplicationSettings::BaseColorChangeStepValue);
+    };
+
+
     /* キーと処理を関連つける */
     bindKeyAction(keyActionMap, KeyConstants::PROGRAM_QUIT_KEY, appQuit);
     bindKeyAction(keyActionMap, KeyConstants::DRAW_KEY, draw);
@@ -164,6 +205,13 @@ void setupKeyBindings(std::unordered_map<int, std::function<void()>>& keyActionM
     bindKeyAction(keyActionMap, KeyConstants::MOVE_CURSOR_UP_KEY, moveUp);
     bindKeyAction(keyActionMap, KeyConstants::MOVE_CURSOR_RIGHT_KEY, moveRight);
     bindKeyAction(keyActionMap, KeyConstants::EXECUTE_DEBUG_PROCESS_KEY, debug);
+
+    bindKeyAction(keyActionMap, KeyConstants::INCREASE_CURRENTCOLOR_R_KEY, increaseColorValueRB);
+    bindKeyAction(keyActionMap, KeyConstants::INCREASE_CURRENTCOLOR_G_KEY, increaseColorValueGB);
+    bindKeyAction(keyActionMap, KeyConstants::INCREASE_CURRENTCOLOR_B_KEY, increaseColorValueBB);
+    bindKeyAction(keyActionMap, KeyConstants::DECREASE_CURRENTCOLOR_R_KEY, decreaseColorValueRB);
+    bindKeyAction(keyActionMap, KeyConstants::DECREASE_CURRENTCOLOR_G_KEY, decreaseColorValueGB);
+    bindKeyAction(keyActionMap, KeyConstants::DECREASE_CURRENTCOLOR_B_KEY, decreaseColorValueBB);
 }
 
 

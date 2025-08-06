@@ -9,20 +9,6 @@ public:
     // 同一の操作に割り当て可能なキーの最大数
     static constexpr int MAX_REGISTABLE_KEY = 2;
 
-    static bool isKeyInput(int key, const std::optional<int> keyBind[2])
-    {
-        if (!keyBind[0].has_value() && !keyBind[1].has_value())
-            return false;
-
-        if (!keyBind[1].has_value())
-            return keyBind[0].value() == key;
-
-        if (!keyBind[0].has_value())
-            return false;
-        else
-            return keyBind[0] == key || keyBind[1] == key;
-    }
-
     // カーソル移動
     static constexpr std::optional<int> MOVE_CURSOR_LEFT_KEY[MAX_REGISTABLE_KEY] = {'h', KEY_LEFT};
     static constexpr std::optional<int> MOVE_CURSOR_DOWN_KEY[MAX_REGISTABLE_KEY] = {'j', KEY_DOWN};
@@ -39,11 +25,11 @@ public:
     static constexpr std::optional<int> EXECUTE_DEBUG_PROCESS_KEY[MAX_REGISTABLE_KEY] = {'d', };
 
     // 描画色RGB変更
-    static constexpr std::optional<int> INCREASE_CURRENTCOLOR_R_KEY[MAX_REGISTABLE_KEY] = {'a'};
-    static constexpr std::optional<int> INCREASE_CURRENTCOLOR_G_KEY[MAX_REGISTABLE_KEY] = {'s'};
-    static constexpr std::optional<int> INCREASE_CURRENTCOLOR_B_KEY[MAX_REGISTABLE_KEY] = {'d'};
+    static constexpr std::optional<int> INCREASE_CURRENTCOLOR_R_KEY[MAX_REGISTABLE_KEY] = {'a', };
+    static constexpr std::optional<int> INCREASE_CURRENTCOLOR_G_KEY[MAX_REGISTABLE_KEY] = {'s', };
+    static constexpr std::optional<int> INCREASE_CURRENTCOLOR_B_KEY[MAX_REGISTABLE_KEY] = {'d', };
     
-    static constexpr std::optional<int> DECREASE_CURRENTCOLOR_R_KEY[MAX_REGISTABLE_KEY] = {'z'};
-    static constexpr std::optional<int> DECREASE_CURRENTCOLOR_G_KEY[MAX_REGISTABLE_KEY] = {'x'};
-    static constexpr std::optional<int> DECREASE_CURRENTCOLOR_B_KEY[MAX_REGISTABLE_KEY] = {'c'};
+    static constexpr std::optional<int> DECREASE_CURRENTCOLOR_R_KEY[MAX_REGISTABLE_KEY] = {'z', };
+    static constexpr std::optional<int> DECREASE_CURRENTCOLOR_G_KEY[MAX_REGISTABLE_KEY] = {'x', };
+    static constexpr std::optional<int> DECREASE_CURRENTCOLOR_B_KEY[MAX_REGISTABLE_KEY] = {'c', };
 };
