@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <clocale>
 #include <cstdint>
+#include <cctype>
 #include <functional>
 #include <ncurses.h>
 #include <optional>
@@ -204,21 +205,36 @@ void setupKeyBindings(std::unordered_map<int, std::function<void()>>& keyActionM
         ApplicationSettings::ShiftColorChangeStepValue
     };
 
-    // for (int step : steps)
-    // {
-        for (int idx = 0; idx < changeColorKeys.size(); idx++)
-        {
-            // 3以降は値減少キーだからマイナスにする必要がある
-            int8_t fact = ((idx >= 3) ? -1 : 1);
+    for (int idx = 0; idx < changeColorKeys.size(); idx++)
+    {
+        // 3以降は値減少キーだからマイナスにする必要がある
+        int8_t fact = ((idx >= 3) ? -1 : 1);
 
-            bindKeyAction(keyActionMap, 
-                changeColorKeys[idx], 
-                createChangeColorValueAction(
-                    context, 
-                    colorRgbPtrs[idx % 3],
-                    steps[0] * fact));
+        bindKeyAction(keyActionMap, 
+            changeColorKeys[idx], 
+            createChangeColorValueAction(
+                context, 
+                colorRgbPtrs[idx % 3],
+                steps[0] * fact));
+
+        std::optional<int> shiftedKeys[KeyConstants::MAX_REGISTABLE_KEY];
+        for (int keyIdx = 0; keyIdx < KeyConstants::MAX_REGISTABLE_KEY; keyIdx++)
+        {
+            // キーが設定されているかどうか
+            if (changeColorKeys[idx][keyIdx])
+                shiftedKeys[keyIdx] = std::toupper(changeColorKeys[idx][keyIdx].value());
+            else
+                shiftedKeys[keyIdx] = std::nullopt;
         }
-    // }
+
+        bindKeyAction(keyActionMap, 
+            shiftedKeys, 
+            createChangeColorValueAction(
+                context, 
+                colorRgbPtrs[idx % 3],
+                steps[1] * fact));
+    }
+    
 }
 
 
