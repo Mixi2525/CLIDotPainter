@@ -132,10 +132,6 @@ void setupKeyBindings(std::unordered_map<int, std::function<void()>>& keyActionM
         if (0 <= cpos.y && cpos.y < canvasSize.y &&
             0 <= cpos.x && cpos.x < canvasSize.x)
         {
-            context.currentRgb.r = context.dist(context.mt);
-            context.currentRgb.g = context.dist(context.mt);
-            context.currentRgb.b = context.dist(context.mt);
-
             Color::NcColorID colnum = Color::allocateNcursesColor(context.currentRgb);
             ColorPair::NcPairID pair = ColorPair::allocateNcursesColorPair(0, colnum);
             canvas.getCurrentLayerIter()->setpx(cpos.y, cpos.x, pair);
@@ -182,6 +178,8 @@ void setupKeyBindings(std::unordered_map<int, std::function<void()>>& keyActionM
     bindKeyAction(keyActionMap, KeyConstants::MOVE_CURSOR_RIGHT_KEY, moveRight);
     bindKeyAction(keyActionMap, KeyConstants::EXECUTE_DEBUG_PROCESS_KEY, debug);
 
+    // 小文字と大文字のRGB色操作のキーバインド
+    // 処理用変数定義
     const std::array<const std::optional<int>*, 6> 
     changeColorKeys = {
         KeyConstants::INCREASE_CURRENTCOLOR_R_KEY,
@@ -204,7 +202,8 @@ void setupKeyBindings(std::unordered_map<int, std::function<void()>>& keyActionM
         ApplicationSettings::BaseColorChangeStepValue,
         ApplicationSettings::ShiftColorChangeStepValue
     };
-
+    
+    // 実際の登録処理
     for (int idx = 0; idx < changeColorKeys.size(); idx++)
     {
         // 3以降は値減少キーだからマイナスにする必要がある
@@ -234,9 +233,7 @@ void setupKeyBindings(std::unordered_map<int, std::function<void()>>& keyActionM
                 colorRgbPtrs[idx % 3],
                 steps[1] * fact));
     }
-    
 }
-
 
 int main()
 {
