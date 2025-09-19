@@ -52,12 +52,13 @@ private:
     static bool isInitialized;
 
 
-    static bool initNcursesColor(NcColorID colorNumber, uint8_t r, uint8_t g, uint8_t b);
 
 public:
+    static bool initNcursesColor(NcColorID colorNumber, uint8_t r, uint8_t g, uint8_t b);
 
     static void Initialize();
     static NcColorID allocateNcursesColor(uint8_t r, uint8_t g, uint8_t b);
+    static NcColorID allocateNcursesColor(RGB rgb);
     static void deleteNcursesColor(NcColorID targetIndex);
 
     static RGB getRGBFromColor(NcColorID color);

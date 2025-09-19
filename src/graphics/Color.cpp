@@ -67,6 +67,11 @@ Color::NcColorID Color::allocateNcursesColor(uint8_t r, uint8_t g, uint8_t b)
     return insertIndex;
 }
 
+Color::NcColorID Color::allocateNcursesColor(Color::RGB rgb)
+{
+    return allocateNcursesColor(rgb.r, rgb.g, rgb.b);
+}
+
 /* deleting process */
 void Color::deleteNcursesColor(Color::NcColorID targetIndex)
 {

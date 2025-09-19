@@ -50,10 +50,11 @@ private:
     static std::deque<NcPairID> colorPalletes;
     static bool isInitialized;
 
-    static bool initNcursesColorPair(NcPairID colorPairNumber, Color::NcColorID fg, Color::NcColorID bg);
 
 
 public:
+    static bool initNcursesColorPair(NcPairID colorPairNumber, Color::NcColorID fg, Color::NcColorID bg);
+
     // 環境ごとに最大値が違う可能性があるので、MAX_COLOR コンパイルor実行時に可変にできたらいいかも
     static NcPairID const COLOR_PAIR_MAX = 65535;
 
