@@ -9,7 +9,7 @@
 -   **情報の表示**: レイヤー一覧やカラーパレットを表示するためのサイドパネルがあります。
 
 ## 動作
-
+- 動作デモ動画（↓クリックするとYoutubeの動画に飛びます）
 [![動作デモ動画](https://img.youtube.com/vi/qkfmk444qsk/maxresdefault.jpg)](https://youtu.be/qkfmk444qsk)
 
 ## 依存関係
