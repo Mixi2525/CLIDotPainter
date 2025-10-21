@@ -13,11 +13,14 @@ public:
     int x;
     int y;
 
-
-
     Vector2(int x = 0, int y = 0);
 
     Vector2& operator += (const Vector2& v);
+    Vector2 operator + (const Vector2& v) const;
+    Vector2 operator - (const Vector2& v) const;
+    Vector2 operator * (const Vector2& v) const;
+    Vector2 operator / (const Vector2& v) const;
+    Vector2 operator % (const Vector2& v) const;
 
     static double Distance(Vector2&, Vector2&);
 };
