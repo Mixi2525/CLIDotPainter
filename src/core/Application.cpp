@@ -290,16 +290,16 @@ int Application::run() {
     std::unordered_map<int, std::function<void()>> keyActionMap;
 
     auto [palMin, palMax] = context.getPrintAreaLimit();
-    SidePanel sidePanel(context.getCorrectWindowSize(), 
+    sidePanel = std::make_unique<SidePanel>(context.getCorrectWindowSize(), 
             palMin, palMax);
 
-    sidePanel.update(context.getCorrectWindowSize(), 
+    sidePanel->update(context.getCorrectWindowSize(), 
             palMin,
             palMax,
             context.getCanvas().layers, 
             context.getCanvas().getCurrentLayerIter());
 
-    Footer footer(
+    footer = std::make_unique<Footer>(
             FooterData(context.getCursor().getCursorPos(), 
                              context.getCanvas().getPos(),
                              context.getCurrentRgb()), 
@@ -395,14 +395,14 @@ int Application::run() {
             = context.getPrintAreaLimit();
         
         // SidePanelの情報をアップデート
-        sidePanel.update(cws, 
+        sidePanel->update(cws, 
             palMin,
             palMax,
             context.getCanvas().layers, 
             context.getCanvas().getCurrentLayerIter());
 
 
-        footer.update(
+        footer->update(
             FooterData(context.getCursor().getCursorPos(), 
                        context.getCanvas().getPos(),
                        context.getCurrentRgb()), 
@@ -412,8 +412,8 @@ int Application::run() {
         // 描画
         context.getCanvas().print();
         context.getCursor().print();
-        sidePanel.print();
-        footer.print();
+        sidePanel->print();
+        footer->print();
 
         refresh();
     }
