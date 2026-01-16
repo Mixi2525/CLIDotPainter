@@ -74,18 +74,6 @@ void debugAction(Canvas& canvas, Cursor& cursor)
 
 }
 
-/*
-struct AppContext
-{
-    bool isClose = false;
-    Color::RGB currentRgb;
-    std::optional<std::reference_wrapper<Canvas>> canvas;
-    std::optional<std::reference_wrapper<Cursor>> cursor;
-    std::mt19937 mt{std::random_device{}()};
-    std::uniform_int_distribution<int> dist{0, 255};
-};
-*/
-
 void changeColorValue(int& col, int step)
 {
     col = std::clamp(col + step, 0, 255);
